@@ -1,0 +1,173 @@
+%start MainMap::INIT
+%class StoreManager
+%package store
+
+%map MainMap
+%%
+INIT
+    Entry{
+        initModel();
+    }
+{
+    showThumbnail()
+        ThumbnailDisplayed{
+            createThumbnail();
+        }
+    onDownloadQueue()
+        push(NetworkMap::Downloading) {}
+}
+
+ThumbnailDisplayed
+    Entry{
+        removeEventListener();
+    }
+    Exit{
+    }
+{
+    clickImage(id)
+        DisplayingDialog{
+            isBookPurchased(id);
+        }
+    gotoBook(id)
+        BookDisplayed{
+            gotoScene(id);
+        }
+    clickPurchase(id, fromDialog)
+        push(DialogMap::IAPBadger) {
+            purchase(id, fromDialog);
+        }
+    showThumbnail() nil {}
+    backThumbnail() nil {}
+
+}
+
+DisplayingDialog
+    Entry{
+    }
+{
+    onClose()
+        ThumbnailDisplayed{}
+    createDialog(id, isPurchase)
+        push(DialogMap::INIT){
+            onCreateDialog(id, isPurchase);
+        }
+    exit()
+        BookDisplayed{}
+    backThumbnail()
+        ThumbnailDisplayed{}
+}
+
+BookDisplayed
+    Entry{
+        onEntryBookDisplayed();
+    }
+    Exit{
+        onExitBookDisplayed();
+    }
+{
+    exit() INIT {}
+    showThumbnail() INIT {}
+}
+%%
+
+%map DialogMap
+%%
+INIT
+{
+    showDialogPurchased()
+        BookPurchased{}
+    showDialogNotPurchased()
+        BookNotPurchased{}
+}
+
+BookPurchased
+    Entry{
+    }
+    Exit{
+    }
+{
+    clickImage(id)
+        pop(exit){
+            gotoScene(id);
+        }
+    clickCloseDialog()
+        pop(onClose){
+            destroyDialog();
+        }
+}
+
+BookNotPurchased
+    Entry{
+    }
+    Exit{
+    }
+{
+    clickPurchase(id, fromDialog)
+        IAPBadger{
+            purchase(id, fromDialog);
+        }
+    clickCloseDialog()
+        pop(onClose){
+                destroyDialog();
+        }
+    showThumbnail() nil {}
+}
+
+IAPBadger
+{
+    onPurchase()
+        push(NetworkMap::Downloading){
+            refreshDialog(true);
+        }
+    onPurchaseCancel()
+        BookNotPurchased{
+            refreshDialog(false);
+        }
+    backThumbnail()
+        pop(){
+            refreshThumbnail();
+        }
+    showDialogPurchased()
+        BookPurchased{}
+    showDialogNotPurchased()
+        BookNotPurchased{}
+    showThumbnail() nil {}
+}
+%%
+
+%map NetworkMap
+%%
+Downloading
+    Entry{
+        startDownload(id);
+    }
+{
+    onSuccess()
+        Downloaded{
+            unzip();
+        }
+    onFailure()
+        DownloadedError{
+            queue(id);
+        }
+    showThumbnail() nil {}
+}
+
+Downloaded
+{
+    backThumbnail()
+        pop(backThumbnail){}
+    fromDialog(id)
+        pop(showDialogPurchased){
+            updateDialog(id);
+        }
+}
+
+DownloadedError
+{
+    backThumbnail()
+        pop(backThumbnail){}
+    fromDialog(id)
+        pop(showDialogNotPurchased){}
+}
+%%
