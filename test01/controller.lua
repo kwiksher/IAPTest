@@ -1,4 +1,4 @@
-local model = require("model")
+local model = require("components.store.model")
 
 local _M = {}
 
@@ -20,11 +20,12 @@ function _M.onRowTouch( event )
         if row.index == 1 then return end
         local prod = model.catalogue.products[row.params.name]
         local device = row.params.device
-        function onComplete(e)
+        local function onComplete(e)
             if e.index == 1 then
                 _M.onSelected({
                     device=device,
                     product={
+                        name = row.params.name,
                         apple = prod.productNames.apple,
                         google = prod.productNames.google,
                         type = prod.productType

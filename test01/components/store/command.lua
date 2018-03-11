@@ -26,8 +26,8 @@ function M.new ()
     end
     -- Called when the scene's view does not exist:
 
-    function CMD:startDownload()
-        downloadManager:startDownload()
+    function CMD:startDownload(id, version)
+        downloadManager:startDownload(id, version)
     end
 
     function CMD:dispose()
@@ -38,9 +38,9 @@ function M.new ()
         -- end
     end
 
-    function CMD.gotoScene(event)
+    function CMD.gotoScene(event, version)
         print("CMD.gotoScene")
-        UI.gotoScene(event)
+        UI.gotoScene(event, version)
     end
     --
     function CMD.showOverlay(event)
@@ -49,7 +49,7 @@ function M.new ()
             isModal = true,
             effect = model.showOverlayEffect,
             time = 200,
-            params = {}
+            params = {selectedPurchase=epsode.name}
         }
         local page = model.INFO_PAGE
         if  bookShelfType == type.pages then
@@ -59,7 +59,7 @@ function M.new ()
             if master.isEmbedded then
                 package.loaded[page] = require("plugin.KwikShelf."..page)
             end
-            model.currentEpsode = {name=epsode, isPurchased = event.target.isPurchased}
+            model.currentEpsode = {name=epsode.name, isPurchased = event.target.isPurchased}
             composer.showOverlay(page, options)
         return true
         else
@@ -76,8 +76,10 @@ function M.new ()
     function CMD.restore(event)
         for k, epsode in pairs (model.epsodes) do
             local button = CMD.view.layer[epsode.name.."Icon"]
+            if button then
             button:removeEventListener("tap", CMD.gotoScene)
             button.savedBtn:removeEventListener("tap", CMD.gotoScene)
+        end
         end
         IAP.restorePurchases(event)
     end
@@ -86,8 +88,8 @@ function M.new ()
         downloadManager.setButtonImage(button, id)
     end
 
-    function CMD.hasDownloaded(name)
-        return downloadManager.hasDownloaded(name)
+    function CMD.hasDownloaded(name, version)
+        return downloadManager.hasDownloaded(name, version)
     end
 
     function CMD.buyBook(e)
@@ -116,13 +118,18 @@ function M.onPurchaseComplete(event)
     local button = downloadGroup[selectedPurchase]
     print("CMD onPurchaseComplete", selectedPurchase)
     --
-    if button then
+    if button and button.purchaseBtn.removeEventListener then
         button.purchaseBtn:removeEventListener("tap", IAP.buyEpsode)
         --
         if (event.actionType == "purchase") then
             -- button.text.text="saving"
             if model.URL then
-                downloadManager:startDownload(event.product)
+                if #model.epsodes[selectedPurchase].versions == 0 then
+                    print("startDownload")
+                    downloadManager:startDownload(event.product)
+                else
+                    print("user can download a version now")
+                end
             else
                -- onDownloadComplete(event.product)
             end

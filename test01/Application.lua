@@ -1,1 +1,1 @@
-local M = {}return M
+local _K = {}    _K.imgDir      = ""    _K.spriteDir   = "assets/sprites/"    _K.thumbDir    = "assets/thumbnails/"    _K.audioDir    =  "assets/audios/"    _K.videoDir    =  "assets/videos/"    _K.particleDir = "assets/particles/"    _K.systemDir   = system.ResourceDirectoryreturn _K

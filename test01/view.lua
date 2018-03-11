@@ -96,6 +96,7 @@ function _M:createTableView(data, controller)
             params = data[i]
         }
     end
+    return tableView
 end
 
 -- Handle press events for the buttons
@@ -109,7 +110,7 @@ end
 function _M:createRadioButtons()
     -- Create a group for the radio button set
     local radioGroup = display.newGroup()
-    local text = display.newText(radioGroup, "Choose Device ->", -display.contentWidth/2+100 , 20, nil, 14)
+    local text = display.newText(radioGroup, "Choose Device", -display.contentWidth/2+50 , 20, nil, 14)
     radioGroup.x  = display.contentWidth/2
     radioGroup.y = 50
 
@@ -135,7 +136,9 @@ function _M:createRadioButtons()
             onPress = onSwitchPress
         }
     )
+    radioGroup:insert(text)
     radioGroup:insert( radioButton2 )
+    return radioGroup
 end
 
 return _M

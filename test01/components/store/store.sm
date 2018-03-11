@@ -47,9 +47,9 @@ DisplayingDialog
 {
     onClose()
         ThumbnailDisplayed{}
-    createDialog(id, isPurchase)
+    createDialog(id, isPurchase, isDownloaded)
         push(DialogMap::INIT){
-            onCreateDialog(id, isPurchase);
+            onCreateDialog(id, isPurchase, isDownloaded);
         }
     exit()
         BookDisplayed{}
@@ -67,6 +67,7 @@ BookDisplayed
 {
     exit() INIT {}
     showThumbnail() INIT {}
+    clickImage nil {}
 }
 %%
 
@@ -86,13 +87,27 @@ BookPurchased
     Exit{
     }
 {
-    clickImage(id)
+    clickImage(id, version)
         pop(exit){
-            gotoScene(id);
+            gotoScene(id, version);
         }
     clickCloseDialog()
         pop(onClose){
             destroyDialog();
+        }
+    onRestore(id)
+        push(NetworkMap::Downloading){
+            startDownload(id);
+        }
+    updateDialog(id) nil {
+        refreshDialog(true);
+    }
+    showDialogPurchased() nil {
+        refreshDialog(true);
+    }
+    startDownload(id, version)
+        push(NetworkMap::Downloading){
+            startDownload(id, version);
         }
 }
 
@@ -115,7 +130,7 @@ BookNotPurchased
 
 IAPBadger
 {
-    onPurchase()
+    startDownload()
         push(NetworkMap::Downloading){
             refreshDialog(true);
         }
@@ -139,7 +154,7 @@ IAPBadger
 %%
 Downloading
     Entry{
-        startDownload(id);
+        startDownload();
     }
 {
     onSuccess()
@@ -151,6 +166,8 @@ Downloading
             queue(id);
         }
     showThumbnail() nil {}
+
+    startDownload() nil {}
 }
 
 Downloaded
