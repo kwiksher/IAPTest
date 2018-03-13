@@ -8,6 +8,7 @@ MyCopy(){
 		cp ../$1/*.txt ../$1/build4/assets/audios/
 		cd ../$1/build4
 		mv assets $2$3
+		rm ../assets.zip
 		zip -r ../assets.zip $2$3
 		mv $2$3 assets
 		cd $root
@@ -21,10 +22,7 @@ MyCopy(){
 		fi
 }
 
-MyCopy A_Direng_v1 book03 xh true
+MyCopy Book01en book01 en true
+MyCopy Book01jp book01 jp
+# MyCopy Book01 book01
 # MyCopy Book02 book02
-# MyCopy Book01en book01en
-# MyCopy Book01jp book01jp
-# MyCopy Book01sp book01sp
-# MyCopy Book02en book02en
-# MyCopy Book02jp book02jp
